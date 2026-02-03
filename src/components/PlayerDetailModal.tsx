@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PokerLeagueAPI } from '../services/api';
-import type { LeaderboardEntry, LivePlayer, LiveGame, PlayerGameHistory, LivePrize, PointLevel, TournamentSchedule } from '../types/api';
+import type { LeaderboardEntry, LiveGame, PlayerGameHistory, TournamentSchedule } from '../types/api';
 
 interface PlayerDetailModalProps {
   player: LeaderboardEntry;

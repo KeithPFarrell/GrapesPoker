@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { PokerLeagueAPI } from '../services/api';
-import type { LiveGame, TournamentSchedule } from '../types/api';
+import type { TournamentSchedule } from '../types/api';
 
 interface TournamentChartProps {
   tournamentId: string;

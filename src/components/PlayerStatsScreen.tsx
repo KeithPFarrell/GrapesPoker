@@ -3,10 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PokerLeagueAPI } from '../services/api';
 import type {
   Player,
-  Tournament,
-  LivePlayer,
   LiveGame,
-  TournamentPlayer,
   PlayerStatistics,
   TournamentPlayerStats,
   PlayerGameHistory,

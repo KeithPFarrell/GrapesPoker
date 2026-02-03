@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PokerLeagueAPI } from '../services/api';
-import type { TournamentPlayer, Player, LeaderboardView, LeaderboardEntry } from '../types/api';
+import type { Player, LeaderboardView, LeaderboardEntry } from '../types/api';
 import PlayerDetailModal from './PlayerDetailModal';
 
 interface LeaderboardProps {
@@ -10,7 +10,6 @@ interface LeaderboardProps {
 export default function Leaderboard({ tournamentId }: LeaderboardProps) {
   const [view, setView] = useState<LeaderboardView>('points');
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [players, setPlayers] = useState<Map<string, Player>>(new Map());
   const [selectedPlayer, setSelectedPlayer] = useState<LeaderboardEntry | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,7 +30,6 @@ export default function Leaderboard({ tournamentId }: LeaderboardProps) {
       allPlayers.forEach(player => {
         playerMap.set(player.id, player);
       });
-      setPlayers(playerMap);
 
       // Create leaderboard entries
       const entries: LeaderboardEntry[] = tournamentPlayers.map((tp, index) => ({
