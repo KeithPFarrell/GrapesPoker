@@ -9,6 +9,7 @@ import type {
 } from '../types/api';
 import Leaderboard from './Leaderboard';
 import TournamentChart from './TournamentChart';
+import TournamentScheduleTable from './TournamentScheduleTable';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -127,12 +128,40 @@ export default function Dashboard() {
               Grapes Poker League
             </h1>
           </div>
-          <button
-            onClick={() => navigate('/players')}
-            className="bg-poker-gold hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded-lg transition-colors"
-          >
-            Player Stats
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                loadTournaments();
+                if (selectedTournament) {
+                  loadTournamentDetails(selectedTournament);
+                }
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
+              title="Refresh data"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+            <button
+              onClick={() => navigate('/players')}
+              className="bg-poker-gold hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded-lg transition-colors"
+            >
+              Player Stats
+            </button>
+          </div>
         </div>
       </header>
 
@@ -296,6 +325,9 @@ export default function Dashboard() {
 
                 {/* Leaderboard */}
                 <Leaderboard tournamentId={selectedTournament.id} />
+
+                {/* Tournament Schedule */}
+                <TournamentScheduleTable tournamentId={selectedTournament.id} />
 
                 {/* Tournament Charts */}
                 <TournamentChart tournamentId={selectedTournament.id} />
