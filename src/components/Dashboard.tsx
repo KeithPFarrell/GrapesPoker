@@ -20,6 +20,8 @@ export default function Dashboard() {
   const [pointLevels, setPointLevels] = useState<PointLevel[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadTournaments();
@@ -88,6 +90,24 @@ export default function Dashboard() {
     }
   }
 
+  async function handleRefresh() {
+    try {
+      setRefreshing(true);
+      // Reload tournaments
+      await loadTournaments();
+      // Reload current tournament details if one is selected
+      if (selectedTournament) {
+        await loadTournamentDetails(selectedTournament);
+      }
+      // Increment refresh key to force child components to reload
+      setRefreshKey(prev => prev + 1);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-poker-green-dark via-poker-green to-poker-green-light flex items-center justify-center">
@@ -130,17 +150,17 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => {
-                loadTournaments();
-                if (selectedTournament) {
-                  loadTournamentDetails(selectedTournament);
-                }
-              }}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className={`${
+                refreshing
+                  ? 'bg-blue-400 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700'
+              } text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2`}
               title="Refresh data"
             >
               <svg
-                className="w-5 h-5"
+                className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -153,7 +173,7 @@ export default function Dashboard() {
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                 />
               </svg>
-              <span className="hidden sm:inline">Refresh</span>
+              <span className="hidden sm:inline">{refreshing ? 'Refreshing...' : 'Refresh'}</span>
             </button>
             <button
               onClick={() => navigate('/players')}
@@ -324,13 +344,13 @@ export default function Dashboard() {
                 </div>
 
                 {/* Leaderboard */}
-                <Leaderboard tournamentId={selectedTournament.id} />
+                <Leaderboard key={`leaderboard-${refreshKey}`} tournamentId={selectedTournament.id} />
 
                 {/* Tournament Schedule */}
-                <TournamentScheduleTable tournamentId={selectedTournament.id} />
+                <TournamentScheduleTable key={`schedule-${refreshKey}`} tournamentId={selectedTournament.id} />
 
                 {/* Tournament Charts */}
-                <TournamentChart tournamentId={selectedTournament.id} />
+                <TournamentChart key={`chart-${refreshKey}`} tournamentId={selectedTournament.id} />
 
                 {/* Points Structure */}
                 {pointLevels.length > 0 && (

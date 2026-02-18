@@ -21,15 +21,34 @@ export default function Leaderboard({ tournamentId }: LeaderboardProps) {
   async function loadLeaderboard() {
     try {
       setLoading(true);
-      const [tournamentPlayers, allPlayers] = await Promise.all([
+      const [tournamentPlayers, allPlayers, livePlayers] = await Promise.all([
         PokerLeagueAPI.getTournamentPlayers(tournamentId),
         PokerLeagueAPI.getPlayers(),
+        PokerLeagueAPI.getLivePlayers(tournamentId),
       ]);
 
       // Create player map
       const playerMap = new Map<string, Player>();
       allPlayers.forEach(player => {
         playerMap.set(player.id, player);
+      });
+
+      // Calculate position counts for each player
+      const playerPositionCounts = new Map<string, number[]>();
+
+      livePlayers.forEach((lp: any) => {
+        const position = lp.placed;
+        if (position && position > 0) {
+          if (!playerPositionCounts.has(lp.playerId)) {
+            // Initialize array with zeros for positions 1-20 (index 0-19)
+            playerPositionCounts.set(lp.playerId, new Array(20).fill(0));
+          }
+          const counts = playerPositionCounts.get(lp.playerId)!;
+          // Increment count for this position (position 1 goes to index 0, etc.)
+          if (position <= 20) {
+            counts[position - 1]++;
+          }
+        }
       });
 
       // Create leaderboard entries
@@ -51,6 +70,8 @@ export default function Leaderboard({ tournamentId }: LeaderboardProps) {
           firstName: 'Unknown',
           lastName: 'Player',
         },
+        // Add position counts for tiebreaker sorting
+        positionCounts: playerPositionCounts.get(tp.playerId) || new Array(20).fill(0),
       }));
 
       setLeaderboard(entries);
@@ -65,7 +86,30 @@ export default function Leaderboard({ tournamentId }: LeaderboardProps) {
     const sorted = [...leaderboard];
     switch (view) {
       case 'points':
-        return sorted.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+        return sorted.sort((a, b) => {
+          // First, sort by total points (highest first)
+          const pointsDiff = (b.totalPoints || 0) - (a.totalPoints || 0);
+          if (pointsDiff !== 0) return pointsDiff;
+
+          // If points are equal, use tiebreaker: compare finishing positions
+          // Start with 1st place wins, then 2nd place, then 3rd, etc.
+          const aPositions = a.positionCounts || [];
+          const bPositions = b.positionCounts || [];
+
+          for (let position = 0; position < 20; position++) {
+            const aCount = aPositions[position] || 0;
+            const bCount = bPositions[position] || 0;
+            const positionDiff = bCount - aCount;
+
+            if (positionDiff !== 0) {
+              // Player with more finishes in this position ranks higher
+              return positionDiff;
+            }
+          }
+
+          // If still tied after all positions, keep original order
+          return 0;
+        });
       case 'winnings':
         return sorted.sort((a, b) => (b.totalWinnings || 0) - (a.totalWinnings || 0));
       case 'knockouts':

@@ -151,6 +151,7 @@ export interface LeaderboardEntry extends TournamentPlayer {
   totalKnockouts: number;
   totalBounties: number;
   player: Player;
+  positionCounts?: number[]; // Array of counts for each position (index 0 = 1st place, 1 = 2nd place, etc.)
 }
 
 export interface PlayerGameHistory {
